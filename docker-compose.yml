@@ -1,0 +1,17 @@
+version: "2"
+services:
+  raft:
+    image: rafting:latest
+    ports:
+      - '8080'
+    environment:
+      - SERVICE_PORTS=8080
+  lb:
+    image: 'dockercloud/haproxy:latest'
+    links:
+      - raft
+    ports:
+      - '80:80'
+      - '1936:1936'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

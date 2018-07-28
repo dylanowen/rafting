@@ -1,0 +1,41 @@
+################################
+##      Personal configs      ##
+################################
+.DS_Store
+
+################################
+##       SBT Stuff            ##
+################################
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+.history
+.cache
+.lib/
+
+################################
+##       Build Files          ##
+################################
+
+*.debug.log
+
+target
+*.class
+out
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+################################
+##       Intellij             ##
+################################
+
+*.iml
+*.ipr
+*.iws
+.idea
