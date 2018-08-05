@@ -8,13 +8,12 @@ import akka.http.scaladsl.server.Directives.{complete, pathPrefix}
 import akka.http.scaladsl.server.PathMatchers.PathEnd
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import com.dylowen.rafting.rpc.RPCRequest
 import com.dylowen.rafting.rpc.raft.AppendEntriesRequest
-import com.dylowen.rafting.rpc.{RPCRequest, RPCRequestBody, RPCSchema}
+import com.dylowen.rafting.servicediscovery.{DockerService, DockerServiceDiscovery}
 import com.sksamuel.avro4s.{AvroInputStream, AvroOutputStream}
 import com.typesafe.scalalogging.LazyLogging
-import shapeless.Coproduct
 
-import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 /**
@@ -49,15 +48,10 @@ object RaftApp extends LazyLogging {
 
     println(result)
 
+
     val serviceDiscovery: DockerService = DockerServiceDiscovery("rafting")("raft")
 
     serviceDiscovery.start()
-      .flatMap(_ => {
-        serviceDiscovery.me match {
-          case Right(hostname) => Future.successful(hostname)
-          case Left(error) => Future.failed(new RuntimeException(error.message))
-        }
-      })
       .onComplete({
         case Success(hostname) => {
           implicit val system: RaftSystem = RaftSystem(hostname, serviceDiscovery)

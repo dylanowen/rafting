@@ -2,6 +2,7 @@ package com.dylowen.rafting
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+import com.dylowen.rafting.servicediscovery.DockerService
 
 import scala.concurrent.ExecutionContextExecutor
 
