@@ -40,6 +40,10 @@ object DockerService {
   private val MaxRange: Int = 10
   private val RefreshFrequency: FiniteDuration = RequestTimeout.mul(MaxRange * 2)
 
+  case class HostName(name: String) {
+    override def toString: String = name
+  }
+
   sealed trait Message
 
   case object RefreshCache extends Message
@@ -172,7 +176,7 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
 
   private val lookupActor: ActorRef = actorSystem.actorOf(Props(new ServiceActor(prefix)))
 
-  def me: Either[ServiceDiscoveryError, String] = {
+  def me: Either[ServiceDiscoveryError, HostName] = {
     val index: Int = _me.get()
     if (index >= 1) {
       Right(getHostName(index))
@@ -182,7 +186,7 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
     }
   }
 
-  def otherInstances: Set[String] = {
+  def otherInstances: Set[HostName] = {
     _otherInstances.keySet.map(getHostName).toSet
   }
 
@@ -190,13 +194,13 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
     s"${network.name}_${name}_"
   }
 
-  private def getHostName(index: Int): String = {
-    prefix + index
+  private def getHostName(index: Int): HostName = {
+    HostName(prefix + index)
   }
 
-  def start(): Unit = {
+  def start(): Future[Unit] = {
     val next: Cancellable = actorSystem.scheduler.schedule(
-      initialDelay = Duration.Zero,
+      initialDelay = RefreshFrequency,
       interval = RefreshFrequency
     )({
       refreshCache()
@@ -205,6 +209,8 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
     // cancel any old schedules
     Option(scheduled.getAndSet(next))
       .map(_.cancel())
+
+    refreshCache()
   }
 
   def stop(): Unit = {
@@ -212,10 +218,12 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
       .map(_.cancel())
   }
 
-  def refreshCache(): Unit = {
+  def refreshCache(): Future[Unit] = {
     implicit val timeout: Timeout = RefreshFrequency
 
-    (lookupActor ? RefreshCache).onComplete({
+    val lookup: Future[Any] = lookupActor ? RefreshCache
+
+    lookup.onComplete({
       case Success(Result(me: Int, hosts: Set[Int])) => {
         _me.set(me)
         hosts.foreach((hostIndex: Int) => {
@@ -225,5 +233,7 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
       case Success(v) => logger.warn("unexpected result " + v)
       case Failure(exception) => logger.error("Lookup actor error", exception)
     })
+
+    lookup.map(_ => (): Unit)
   }
 }

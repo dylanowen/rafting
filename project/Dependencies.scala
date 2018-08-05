@@ -14,6 +14,8 @@ object Dependencies {
 
     val Sttp: String = "1.2.2"
 
+    val Avro: String = "1.9.0"
+
     val Log4j: String = "2.8.2"
     val Slf4j: String = "1.7.25"
 
@@ -31,15 +33,20 @@ object Dependencies {
     "com.softwaremill.sttp" %% "akka-http-backend" % Versions.Sttp
   )
 
-  lazy val ScalaLogging: ModuleID = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
-  lazy val Log4jApi: ModuleID = "org.apache.logging.log4j" % "log4j-api" % Versions.Log4j
-  lazy val Log4jCore: ModuleID = "org.apache.logging.log4j" % "log4j-api" % Versions.Log4j
-  lazy val Log4jSlf4j: ModuleID = "org.apache.logging.log4j" % "log4j-slf4j-impl" % Versions.Log4j
-  lazy val Slf4j: ModuleID = "org.slf4j" % "slf4j-api" % Versions.Slf4j
+  lazy val Avro: ModuleID = "com.sksamuel.avro4s" %% "avro4s-core" % Versions.Avro
 
-  // Required for Logging Properties Parsing
-  lazy val JacksonCore: ModuleID = "com.fasterxml.jackson.core" % "jackson-core" % Versions.Jackson
-  lazy val JacksonDatabind: ModuleID = "com.fasterxml.jackson.core" % "jackson-databind" % Versions.Jackson
-  lazy val JacksonAnnotations: ModuleID = "com.fasterxml.jackson.core" % "jackson-annotations" % Versions.Jackson
-  lazy val JacksonDataformat: ModuleID = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % Versions.Jackson
+  lazy val Logging: Seq[ModuleID] = Seq(
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+    "org.apache.logging.log4j" % "log4j-api" % Versions.Log4j,
+    "org.apache.logging.log4j" % "log4j-api" % Versions.Log4j,
+    "org.apache.logging.log4j" % "log4j-slf4j-impl" % Versions.Log4j,
+    "org.slf4j" % "slf4j-api" % Versions.Slf4j
+  )
+
+  lazy val Jackson: Seq[ModuleID] = Seq(
+    "com.fasterxml.jackson.core" % "jackson-core" % Versions.Jackson,
+    "com.fasterxml.jackson.core" % "jackson-databind" % Versions.Jackson,
+    "com.fasterxml.jackson.core" % "jackson-annotations" % Versions.Jackson,
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % Versions.Jackson
+  )
 }

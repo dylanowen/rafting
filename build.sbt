@@ -14,7 +14,9 @@ scalacOptions in ThisBuild ++= Seq(
 
 libraryDependencies ++= Dependencies.Akka
 libraryDependencies ++= Dependencies.Sttp
-libraryDependencies += Dependencies.ScalaLogging
+libraryDependencies += Dependencies.Avro
+libraryDependencies ++= Dependencies.Logging
+libraryDependencies ++= Dependencies.Jackson
 
 mainClass in Compile := Some("com.dylowen.rafting.RaftApp")
 

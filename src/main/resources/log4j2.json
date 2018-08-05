@@ -1,6 +1,6 @@
 {
   "configuration": {
-    "name": "GameServer",
+    "name": "Rafting",
     "status": "info",
     "appenders": {
       "Console": {
