@@ -1,6 +1,6 @@
 package com.dylowen.rafting
 
-import java.net.InetAddress
+import java.net.{InetAddress, UnknownHostException}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -25,18 +25,17 @@ object RaftApp {
     val host: String = "0.0.0.0"
     val port: Int = 8080
 
+    val serviceDiscovery: DockerService = DockerServiceDiscovery("rafting")("raft")
+    serviceDiscovery.start()
+
     //val root: Resource = Root.common
     val handler: Route = pathPrefix(PathEnd) {
-      println(s"Called $hostname")
+      println(s"Called ${serviceDiscovery.me.getOrElse("unknown")}")
       complete(200, "ready")
     }
 
     Http().bindAndHandle(handler, host, port)
 
-    println(s"$hostname ready")
-  }
-
-  private lazy val hostname: String = {
-    InetAddress.getLocalHost.getHostName
+    println(s"${serviceDiscovery.me.getOrElse("unknown")} ready")
   }
 }

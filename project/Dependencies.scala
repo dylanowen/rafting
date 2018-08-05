@@ -9,7 +9,7 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val Akka: String = "10.1.1"
+    val AkkaHttp: String = "10.1.3"
     val AkkaStream: String = "2.5.11"
 
     val Sttp: String = "1.2.2"
@@ -21,9 +21,9 @@ object Dependencies {
   }
 
   lazy val Akka: Seq[ModuleID] = Seq(
-    "com.typesafe.akka" %% "akka-http" % Versions.Akka,
-    "com.typesafe.akka" %% "akka-stream" % Versions.AkkaStream
-    //"com.typesafe.akka" %% "akka-http2-support" % Versions.Akka
+    "com.typesafe.akka" %% "akka-http" % Versions.AkkaHttp,
+    "com.typesafe.akka" %% "akka-stream" % Versions.AkkaStream,
+    "com.typesafe.akka" %% "akka-http-caching" % Versions.AkkaHttp
   )
 
   lazy val Sttp: Seq[ModuleID] = Seq(
