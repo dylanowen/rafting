@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Cancellable, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
-import com.dylowen.rafting.DockerService.LookupStatus
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.concurrent.TrieMap
@@ -86,15 +85,11 @@ object DockerService {
           self ! ScheduleLookup
         }
       }
-      case late => {
-        //println("late " + late)
-      }
+      case _ => // ignore late responses
     }
 
     private def running(requesters: Set[ActorRef], myAddresss: InetAddress, lastStatuses: Vector[LookupStatus]): Actor.Receive = {
       case ScheduleLookup => {
-        //println("lookup scheduled " + lastStatuses.length)
-
         context.become(running(requesters, myAddresss, lastStatuses :+ StatusLooking))
         lookupHost(lastStatuses.length, myAddresss)
       }
@@ -115,10 +110,8 @@ object DockerService {
           (current, math.max(current, count._2))
         })._2
 
-        //println(longestFailureRun)
-
         if (longestFailureRun >= MaxRange) {
-          val result: Result = statuses.filter(_.success).zipWithIndex
+          val result: Result = statuses.zipWithIndex.filter(_._1.success)
             .foldLeft(Result(-1, Set()))((tempResult: Result, status: (LookupStatus, Int)) => {
               if (status._1.me) {
                 tempResult.copy(me = status._2)
@@ -132,7 +125,6 @@ object DockerService {
           context.become(ready)
 
           // send our response
-          //println("sending result " + result)
           requesters.foreach(_ ! result)
         }
         else {
@@ -144,7 +136,7 @@ object DockerService {
         context.become(running(requesters + sender(), myAddresss, lastStatuses))
       }
       case unexpected => {
-        println("unexpected: " + unexpected)
+        log.warning("unexpected: " + unexpected)
       }
     }
 
@@ -157,9 +149,7 @@ object DockerService {
           LookupResult(index, address.isReachable(RequestTimeout.toMillis.asInstanceOf[Int]), isMe)
         })
         .recover({
-          case NonFatal(e) => {
-            //println(e)
-
+          case NonFatal(_) => {
             LookupResult(index, success = false, me = false)
           }
         })
@@ -192,7 +182,7 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
     }
   }
 
-  private def otherInstances: Set[String] = {
+  def otherInstances: Set[String] = {
     _otherInstances.keySet.map(getHostName).toSet
   }
 
@@ -227,15 +217,13 @@ class DockerService(network: DockerNetwork, name: String)(implicit actorSystem: 
 
     (lookupActor ? RefreshCache).onComplete({
       case Success(Result(me: Int, hosts: Set[Int])) => {
-        println(me, hosts)
-
         _me.set(me)
         hosts.foreach((hostIndex: Int) => {
           _otherInstances.put(hostIndex, ())
         })
       }
-      case Success(v) => println("unexpected result " + v)
-      case Failure(exception) => println("Lookup actor error", exception)
+      case Success(v) => logger.warn("unexpected result " + v)
+      case Failure(exception) => logger.error("Lookup actor error", exception)
     })
   }
 }

@@ -1,11 +1,8 @@
 package com.dylowen.rafting
 
-import java.net.{InetAddress, UnknownHostException}
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.server.Directives.{complete, getFromResource, pathPrefix}
+import akka.http.scaladsl.server.Directives.{complete, pathPrefix}
 import akka.http.scaladsl.server.PathMatchers.PathEnd
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
@@ -31,7 +28,7 @@ object RaftApp {
     //val root: Resource = Root.common
     val handler: Route = pathPrefix(PathEnd) {
       println(s"Called ${serviceDiscovery.me.getOrElse("unknown")}")
-      complete(200, "ready")
+      complete(200, serviceDiscovery.me.getOrElse("unknown") + "\n" + serviceDiscovery.otherInstances)
     }
 
     Http().bindAndHandle(handler, host, port)
