@@ -1,5 +1,6 @@
 package com.dylowen.rafting.rpc.raft
 
+import com.dylowen.rafting.raft.{LogEntry, Term}
 import com.dylowen.rafting.rpc.{RPCRequestBody, RPCResponseBody}
 
 /**
@@ -8,24 +9,39 @@ import com.dylowen.rafting.rpc.{RPCRequestBody, RPCResponseBody}
   * @author dylan.owen
   * @since Aug-2018
   */
+sealed trait RaftRequest extends RPCRequestBody
+
+sealed trait RaftResponse extends RPCResponseBody
+
 case class AppendEntriesRequest(term: Term,
                                 leaderId: Int,
                                 prevLogIndex: Int,
                                 prevLogTerm: Term,
-                                entries: Seq[String],
-                                leaderCommit: Int) extends RPCRequestBody
+                                entries: Seq[LogEntry],
+                                leaderCommit: Int) extends RaftRequest
 
 case class AppendEntriesResponse(term: Term,
-                                 success: Boolean) extends RPCResponseBody
+                                 success: Boolean) extends RaftResponse
 
 
 case class RequestVoteRequest(term: Term,
                               candidateId: Int,
                               lastLogIndex: Int,
-                              lastLogTerm: Term) extends RPCRequestBody
+                              lastLogTerm: Term) extends RaftRequest
 
 case class RequestVoteResponse(term: Term,
-                               voteGranted: Boolean) extends RPCResponseBody
+                               voteGranted: Boolean) extends RaftResponse
+
+
+case class InstallSnapshotRequest(term: Term,
+                                  leaderId: Int,
+                                  lastIncludedIndex: Int,
+                                  lastIncludedTerm: Term,
+                                  offset: Int,
+                                  date: Array[Byte],
+                                  done: Boolean) extends RaftRequest
+
+case class InstallSnapshotResponse(term: Term) extends RaftResponse
 
 
 /*

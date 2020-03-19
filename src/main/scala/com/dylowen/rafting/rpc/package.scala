@@ -1,6 +1,6 @@
 package com.dylowen.rafting
 
-import com.dylowen.rafting.rpc.raft.{AppendEntriesRequest, AppendEntriesResponse, RequestVoteRequest, RequestVoteResponse}
+import com.dylowen.rafting.rpc.raft._
 import com.sksamuel.avro4s.AvroSchema
 import org.apache.avro.Schema
 import shapeless.ops.coproduct.Inject
@@ -15,10 +15,20 @@ import scala.language.implicitConversions
   * @since Aug-2018
   */
 package object rpc {
+
+  trait RPCRequestBody
+
+  trait RPCResponseBody
+
   private type Req = AppendEntriesRequest :+:
     RequestVoteRequest :+:
+    InstallSnapshotRequest :+:
     CNil
 
+  private type Res = AppendEntriesResponse :+:
+    RequestVoteResponse :+:
+    InstallSnapshotResponse :+:
+    CNil
 
   object RPCRequest {
 
@@ -34,10 +44,6 @@ package object rpc {
   }
 
   case class RPCRequest(body: Req)
-
-  private type Res = AppendEntriesResponse :+:
-    RequestVoteResponse :+:
-    CNil
 
   object RPCResponse {
 

@@ -1,4 +1,4 @@
-package com.dylowen.rafting.rpc
+package com.dylowen.rafting
 
 /**
   * TODO add description
@@ -8,4 +8,6 @@ package com.dylowen.rafting.rpc
   */
 package object raft {
   type Term = Int
+
+  case class LogEntry(term: Term, command: Array[Byte])
 }
